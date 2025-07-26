@@ -3,10 +3,10 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Segoe UI', Arial, sans-serif;
-  background: #f4f6fa;
-  margin: 0;
-  color: #222;
+  @apply bg-bg-light text-text-light transition-colors duration-300;
+}
+.dark body {
+  @apply bg-bg-dark text-text-dark;
 }
 
 nav {
