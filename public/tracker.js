@@ -31,4 +31,5 @@ class SimpleTracker {
   }
   
   // Inicia automáticamente
+  console.log('Tracker iniciado');
   new SimpleTracker();
