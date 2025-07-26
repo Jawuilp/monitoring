@@ -2,7 +2,7 @@
 class SimpleTracker {
     constructor() {
       this.startTime = new Date();
-      this.endpoint = 'https://tudominio.vercel.app/api/collect';
+      this.endpoint = '/api/collect';
       this.trackVisit();
     }
   
