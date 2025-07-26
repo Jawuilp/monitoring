@@ -4,8 +4,8 @@ export default function View() {
   const [visits, setVisits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [status, setStatus] = useState({}); // Estado de cada URL
-  const [checking, setChecking] = useState({}); // Estado de carga por URL
+  const [status, setStatus] = useState({});
+  const [checking, setChecking] = useState({});
 
   useEffect(() => {
     fetch('/api/collect?action=get')
@@ -23,20 +23,15 @@ export default function View() {
       });
   }, []);
 
-  // Contar visitas por URL
   const visitasPorUrl = visits.reduce((acc, v) => {
     acc[v.url] = (acc[v.url] || 0) + 1;
     return acc;
   }, {});
 
-  // Verificar si un sitio está activo
   const verificarSitio = async (url) => {
     setChecking(prev => ({ ...prev, [url]: true }));
     try {
-      // Usar fetch con modo no-cors para evitar bloqueos, pero no se puede leer status real
-      // Por eso, intentamos con HEAD y fallback a GET
       let res = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
-      // Si no hay error, consideramos activo (no-cors no permite leer status, pero si falla lanza error)
       setStatus(prev => ({ ...prev, [url]: 'activo' }));
     } catch {
       setStatus(prev => ({ ...prev, [url]: 'inactivo' }));
@@ -45,57 +40,51 @@ export default function View() {
   };
 
   return (
-    <div style={{ fontFamily: 'Arial, sans-serif', padding: '32px', maxWidth: 900, margin: 'auto', background: '#f7f9fa', borderRadius: 12, boxShadow: '0 2px 12px #0001' }}>
-      <h1 style={{ textAlign: 'center', color: '#2b5876', marginBottom: 24 }}>Visualización de Datos</h1>
-      {loading && <p>Cargando datos...</p>}
-      {error && <p style={{ color: 'red' }}>Error: {error}</p>}
-      {!loading && !error && visits.length === 0 && <p>No hay datos para mostrar.</p>}
+    <div className="min-h-screen flex flex-col items-center justify-start bg-gray-50 py-10 px-2">
+      <h1 className="text-4xl font-bold text-blue-600 mb-6 text-center">Visualización de Datos</h1>
+      {loading && <p className="text-lg text-gray-600">Cargando datos...</p>}
+      {error && <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">Error: {error}</div>}
+      {!loading && !error && visits.length === 0 && (
+        <div className="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded mb-4">No se detectan webs.</div>
+      )}
       {!loading && !error && visits.length > 0 && (
-        <>
-          <h2 style={{ color: '#2b5876', marginTop: 0 }}>Visitas por URL</h2>
-          <table style={{ width: '100%', borderCollapse: 'collapse', background: '#fff', borderRadius: 8, overflow: 'hidden', boxShadow: '0 1px 4px #0001' }}>
-            <thead>
-              <tr style={{ background: 'linear-gradient(90deg, #2b5876 0%, #4e4376 100%)', color: '#fff' }}>
-                <th style={{ padding: 12, textAlign: 'left' }}>URL</th>
-                <th style={{ padding: 12 }}>Visitas</th>
-                <th style={{ padding: 12 }}>Estado</th>
-                <th style={{ padding: 12 }}>Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(visitasPorUrl).map(([url, count]) => (
-                <tr key={url} style={{ borderBottom: '1px solid #eee' }}>
-                  <td style={{ padding: 10, wordBreak: 'break-all' }}>{url}</td>
-                  <td style={{ padding: 10, textAlign: 'center' }}>{count}</td>
-                  <td style={{ padding: 10, textAlign: 'center' }}>
-                    {status[url] === 'activo' && <span style={{ color: 'green', fontWeight: 'bold' }}>Activo</span>}
-                    {status[url] === 'inactivo' && <span style={{ color: 'red', fontWeight: 'bold' }}>Inactivo</span>}
-                    {!status[url] && <span style={{ color: '#888' }}>Sin verificar</span>}
-                  </td>
-                  <td style={{ padding: 10, textAlign: 'center' }}>
-                    <button
-                      onClick={() => verificarSitio(url)}
-                      disabled={checking[url]}
-                      style={{
-                        background: 'linear-gradient(90deg, #2b5876 0%, #4e4376 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 6,
-                        padding: '6px 16px',
-                        cursor: checking[url] ? 'not-allowed' : 'pointer',
-                        fontWeight: 'bold',
-                        boxShadow: '0 1px 4px #0002',
-                        opacity: checking[url] ? 0.6 : 1
-                      }}
-                    >
-                      {checking[url] ? 'Verificando...' : 'Verificar estado'}
-                    </button>
-                  </td>
+        <div className="w-full max-w-4xl">
+          <h2 className="text-2xl font-semibold text-blue-700 mb-4">Visitas por URL</h2>
+          <div className="overflow-x-auto">
+            <table className="min-w-full bg-white rounded shadow">
+              <thead>
+                <tr className="bg-gradient-to-r from-blue-600 to-blue-400 text-white">
+                  <th className="py-3 px-4 text-left">URL</th>
+                  <th className="py-3 px-4">Visitas</th>
+                  <th className="py-3 px-4">Estado</th>
+                  <th className="py-3 px-4">Acción</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </>
+              </thead>
+              <tbody>
+                {Object.entries(visitasPorUrl).map(([url, count]) => (
+                  <tr key={url} className="border-b last:border-b-0">
+                    <td className="py-2 px-4 break-all">{url}</td>
+                    <td className="py-2 px-4 text-center">{count}</td>
+                    <td className="py-2 px-4 text-center">
+                      {status[url] === 'activo' && <span className="text-green-600 font-bold">Activo</span>}
+                      {status[url] === 'inactivo' && <span className="text-red-600 font-bold">Inactivo</span>}
+                      {!status[url] && <span className="text-gray-500">Sin verificar</span>}
+                    </td>
+                    <td className="py-2 px-4 text-center">
+                      <button
+                        onClick={() => verificarSitio(url)}
+                        disabled={checking[url]}
+                        className={`bg-gradient-to-r from-blue-600 to-blue-400 text-white font-bold py-1 px-4 rounded shadow transition-opacity ${checking[url] ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90'}`}
+                      >
+                        {checking[url] ? 'Verificando...' : 'Verificar estado'}
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </div>
   );
