@@ -4,14 +4,23 @@ export default function View() {
   const [visits, setVisits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [errorDetail, setErrorDetail] = useState(null);
   const [status, setStatus] = useState({});
   const [checking, setChecking] = useState({});
-  const [dark, setDark] = useState(false);
 
   useEffect(() => {
     fetch('/api/collect?action=get')
-      .then(res => {
-        if (!res.ok) throw new Error('Error al obtener datos');
+      .then(async res => {
+        if (!res.ok) {
+          let detail = '';
+          try {
+            const data = await res.json();
+            detail = data.error || JSON.stringify(data);
+          } catch {
+            detail = await res.text();
+          }
+          throw new Error(detail || 'Error al obtener datos');
+        }
         return res.json();
       })
       .then(data => {
@@ -19,18 +28,11 @@ export default function View() {
         setLoading(false);
       })
       .catch(e => {
-        setError(e.message);
+        setError('Error al obtener datos');
+        setErrorDetail(e.message);
         setLoading(false);
       });
   }, []);
-
-  useEffect(() => {
-    if (dark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [dark]);
 
   const visitasPorUrl = visits.reduce((acc, v) => {
     acc[v.url] = (acc[v.url] || 0) + 1;
@@ -49,80 +51,96 @@ export default function View() {
   };
 
   return (
-    <div className="min-h-screen bg-[#e7f0e6] dark:bg-[#18181b] flex flex-col items-center justify-center transition-colors duration-300">
-      <div className="w-full max-w-5xl mx-auto rounded-2xl shadow-lg bg-white dark:bg-[#23232b] p-0 md:p-8 mt-8 mb-8">
-        <nav className="flex justify-between items-center border-b border-gray-200 dark:border-gray-700 px-6 py-4">
-          <div className="flex gap-4">
-            <a href="/" className="font-semibold text-lg text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 transition">Analytics</a>
-            <a href="/view" className="font-semibold text-lg text-gray-900 dark:text-gray-100">Visualización</a>
+    <div className="min-h-screen bg-gray-100 font-['Inter']">
+      <header className="bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+          <h1 className="text-xl font-semibold text-gray-900">Analytics</h1>
+          <nav>
+            <a className="text-base font-medium text-gray-500 hover:text-gray-900" href="/">Analytics</a>
+          </nav>
+        </div>
+      </header>
+      <main className="py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mb-8">
+            <h2 className="text-3xl font-bold leading-tight text-gray-900">Visualización de Datos</h2>
           </div>
-          <button
-            className="px-3 py-1 rounded bg-gray-100 dark:bg-[#23232b] text-xs font-bold text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-700 transition"
-            onClick={() => setDark(d => !d)}
-            aria-label="Cambiar modo de color"
-          >
-            {dark ? '🌙 Modo Oscuro' : '☀️ Modo Claro'}
-          </button>
-        </nav>
-        <main className="p-4 md:p-8 flex flex-col gap-6">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">Visualización de Datos</h1>
-          {/* Card de visitas */}
-          <section className="bg-gray-100 dark:bg-[#18181b] rounded-xl p-4 md:p-6 flex flex-col gap-2 shadow-sm border border-gray-200 dark:border-gray-700">
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">Visitas por URL</h2>
-            {loading && <p className="text-base text-gray-500 dark:text-gray-400">Cargando datos...</p>}
-            {error && (
-              <div className="flex flex-col items-center justify-center py-8">
-                <span className="text-4xl text-red-400 mb-2">&#9888;</span>
-                <span className="font-semibold text-gray-700 dark:text-gray-200 mb-1">Error al obtener datos</span>
-                <span className="text-gray-500 dark:text-gray-400 text-sm">No pudimos cargar las visitas. Por favor, inténtalo de nuevo más tarde.</span>
-              </div>
-            )}
-            {!loading && !error && visits.length === 0 && (
-              <div className="flex flex-col items-center justify-center py-8">
-                <span className="text-4xl text-yellow-400 mb-2">&#9888;</span>
-                <span className="font-semibold text-gray-700 dark:text-gray-200 mb-1">No se detectan webs</span>
-                <span className="text-gray-500 dark:text-gray-400 text-sm">Aún no se han registrado visitas.</span>
-              </div>
-            )}
-            {!loading && !error && visits.length > 0 && (
-              <div className="overflow-x-auto mt-2">
-                <table className="min-w-full bg-white dark:bg-[#23232b] rounded shadow border border-gray-200 dark:border-gray-700">
-                  <thead>
-                    <tr className="bg-gray-100 dark:bg-[#18181b] text-gray-900 dark:text-gray-100">
-                      <th className="py-3 px-4 text-left">URL</th>
-                      <th className="py-3 px-4">Visitas</th>
-                      <th className="py-3 px-4">Estado</th>
-                      <th className="py-3 px-4">Acción</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {Object.entries(visitasPorUrl).map(([url, count]) => (
-                      <tr key={url} className="border-b last:border-b-0 border-gray-200 dark:border-gray-700">
-                        <td className="py-2 px-4 break-all">{url}</td>
-                        <td className="py-2 px-4 text-center">{count}</td>
-                        <td className="py-2 px-4 text-center">
-                          {status[url] === 'activo' && <span className="text-green-600 dark:text-green-400 font-bold">Activo</span>}
-                          {status[url] === 'inactivo' && <span className="text-red-600 dark:text-red-400 font-bold">Inactivo</span>}
-                          {!status[url] && <span className="text-gray-500 dark:text-gray-400">Sin verificar</span>}
-                        </td>
-                        <td className="py-2 px-4 text-center">
-                          <button
-                            onClick={() => verificarSitio(url)}
-                            disabled={checking[url]}
-                            className={`bg-gray-200 dark:bg-[#23232b] text-gray-700 dark:text-gray-200 font-bold py-1 px-4 rounded shadow border border-gray-300 dark:border-gray-700 transition-opacity ${checking[url] ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90'}`}
-                          >
-                            {checking[url] ? 'Verificando...' : 'Verificar estado'}
-                          </button>
-                        </td>
+          <div className="bg-white rounded-lg shadow">
+            <div className="p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Visitas por URL</h3>
+            </div>
+            <div className="p-6">
+              {loading && (
+                <div className="flex items-center justify-center text-center text-gray-500">
+                  <div className="flex flex-col items-center">
+                    <span className="material-icons text-5xl text-gray-400 mb-2">hourglass_empty</span>
+                    <p className="font-medium">Cargando datos...</p>
+                  </div>
+                </div>
+              )}
+              {error && (
+                <div className="flex items-center justify-center text-center text-gray-500">
+                  <div className="flex flex-col items-center">
+                    <span className="material-icons text-5xl text-red-400 mb-2">error_outline</span>
+                    <p className="font-medium">{error}</p>
+                    <p className="text-sm">No pudimos cargar las visitas. Por favor, inténtalo de nuevo más tarde.</p>
+                    {errorDetail && (
+                      <pre className="bg-red-50 text-xs text-red-700 rounded p-2 mt-2 max-w-xl overflow-x-auto">{errorDetail}</pre>
+                    )}
+                  </div>
+                </div>
+              )}
+              {!loading && !error && visits.length === 0 && (
+                <div className="flex items-center justify-center text-center text-gray-500">
+                  <div className="flex flex-col items-center">
+                    <span className="material-icons text-5xl text-yellow-400 mb-2">info</span>
+                    <p className="font-medium">No se detectan webs</p>
+                    <p className="text-sm">Aún no se han registrado visitas.</p>
+                  </div>
+                </div>
+              )}
+              {!loading && !error && visits.length > 0 && (
+                <div className="overflow-x-auto mt-2">
+                  <table className="min-w-full bg-white rounded shadow border border-gray-200">
+                    <thead>
+                      <tr className="bg-gray-100 text-gray-900">
+                        <th className="py-3 px-4 text-left">URL</th>
+                        <th className="py-3 px-4">Visitas</th>
+                        <th className="py-3 px-4">Estado</th>
+                        <th className="py-3 px-4">Acción</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
-        </main>
-      </div>
+                    </thead>
+                    <tbody>
+                      {Object.entries(visitasPorUrl).map(([url, count]) => (
+                        <tr key={url} className="border-b last:border-b-0 border-gray-200">
+                          <td className="py-2 px-4 break-all">{url}</td>
+                          <td className="py-2 px-4 text-center">{count}</td>
+                          <td className="py-2 px-4 text-center">
+                            {status[url] === 'activo' && <span className="text-green-600 font-bold">Activo</span>}
+                            {status[url] === 'inactivo' && <span className="text-red-600 font-bold">Inactivo</span>}
+                            {!status[url] && <span className="text-gray-500">Sin verificar</span>}
+                          </td>
+                          <td className="py-2 px-4 text-center">
+                            <button
+                              onClick={() => verificarSitio(url)}
+                              disabled={checking[url]}
+                              className={`bg-gray-200 text-gray-700 font-bold py-1 px-4 rounded shadow border border-gray-300 transition-opacity ${checking[url] ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90'}`}
+                            >
+                              {checking[url] ? 'Verificando...' : 'Verificar estado'}
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      </main>
+      {/* Material Icons CDN */}
+      <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
     </div>
   );
 } 
