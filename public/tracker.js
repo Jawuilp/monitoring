@@ -1,7 +1,7 @@
 class SimpleTracker {
   constructor() {
       this.startTime = new Date();
-      this.endpoint = '/api/collect'; // Cambia a la URL completa si el servidor está en otro dominio, ej: 'https://tu-api.com/api/collect'
+      this.endpoint = 'https://monitoring-beige.vercel.app/api/collect'; // Cambia a la URL completa si el servidor está en otro dominio, ej: 'https://tu-api.com/api/collect'
       this.trackVisit();
   }
 
