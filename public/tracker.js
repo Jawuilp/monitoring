@@ -1,35 +1,41 @@
 // Script de monitoreo para el frontend 
 class SimpleTracker {
-    constructor() {
+  constructor() {
       this.startTime = new Date();
       this.endpoint = '/api/collect';
       this.trackVisit();
-    }
-  
-    async trackVisit() {
-      // Detectar IP (método simplificado)
-      const ip = await fetch('https://api.ipify.org?format=json')
-        .then(res => res.json())
-        .then(data => data.ip)
-        .catch(() => 'unknown');
-  
-      // Calcular duración al cerrar la pestaña
-      window.addEventListener('beforeunload', () => {
-        const duration = (new Date() - this.startTime) / 1000; // segundos
-        
-        fetch(this.endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            url: window.location.href,
-            ip,
-            duration: Math.round(duration)
-          })
-        });
-      });
-    }
   }
-  
-  // Inicia automáticamente
-  console.log('Tracker iniciado');
-  new SimpleTracker();
+
+  async trackVisit() {
+      // Detectar IP
+      let ip = 'unknown';
+      try {
+          const response = await fetch('https://api.ipify.org?format=json');
+          const data = await response.json();
+          ip = data.ip;
+          console.log('IP obtenida:', ip);
+      } catch (error) {
+          console.error('Error al obtener IP:', error);
+      }
+
+      // Registrar datos al cerrar la pestaña
+      window.addEventListener('beforeunload', () => {
+          const duration = (new Date() - this.startTime) / 1000;
+          const data = {
+              url: window.location.href,
+              ip,
+              duration: Math.round(duration)
+          };
+          console.log('Enviando datos:', data);
+          try {
+              navigator.sendBeacon(this.endpoint, JSON.stringify(data));
+          } catch (error) {
+              console.error('Error enviando datos:', error);
+          }
+      });
+  }
+}
+
+// Iniciar el tracker
+console.log('Tracker iniciado');
+new SimpleTracker();
