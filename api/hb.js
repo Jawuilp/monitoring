@@ -42,14 +42,18 @@ export default async (req, res) => {
         }
       }
       
-      const { url, ip, duration } = data || {};
-      if (!url || !ip || typeof duration !== 'number') {
-        return res.status(400).json({ error: 'Datos incompletos o inválidos. Se requiere url, ip y duration (number).' });
+      const { url, duration } = data || {};
+      if (!url || typeof duration !== 'number') {
+        return res.status(400).json({ error: 'Datos incompletos o inválidos. Se requiere url y duration (number).' });
       }
+
+      // Derivar IP del cliente desde los headers (detrás de proxies/CDN)
+      const xfwd = (req.headers['x-forwarded-for'] || '') + '';
+      const clientIp = xfwd.split(',')[0].trim() || req.headers['x-real-ip'] || req.socket?.remoteAddress || '0.0.0.0';
 
       try {
         const query = 'INSERT INTO visits (url, ip_address, duration_seconds, visit_timestamp) VALUES ($1, $2, $3, NOW())';
-        await pool.query(query, [url, ip, duration]);
+        await pool.query(query, [url, clientIp, duration]);
         // Responder 204 No Content (ideal para sendBeacon y menos "ruido" para bloqueadores)
         res.status(204).end();
       } catch (e) {

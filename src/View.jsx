@@ -10,8 +10,8 @@ export default function View() {
 
   useEffect(() => {
     const apiUrl = window.location.hostname === 'localhost' 
-      ? '/api/collect' 
-      : 'https://monitoring-beige.vercel.app/api/collect';
+      ? '/api/hb' 
+      : 'https://monitoring-beige.vercel.app/api/hb';
     
     fetch(apiUrl, {
       method: 'GET',

@@ -6,7 +6,7 @@ export default function Home() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('/api/collect?action=get')
+    fetch('/api/hb?action=get')
       .then(res => {
         if (!res.ok) throw new Error('Error al obtener datos');
         return res.json();
@@ -27,7 +27,7 @@ export default function Home() {
       <div>
         <h2>Script para instalar:</h2>
         <pre style={{ background: '#eee', padding: '10px', borderRadius: 4 }}>
-          {`<script src="https://tudominio.vercel.app/tracker.js"></script>`}
+          {`<script src="https://tudominio.vercel.app/metrics.js"></script>`}
         </pre>
       </div>
       <h2>Últimas visitas:</h2>
