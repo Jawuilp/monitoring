@@ -9,27 +9,46 @@ export default function View() {
   const [checking, setChecking] = useState({});
 
   useEffect(() => {
-    fetch('/api/collect?action=get')
+    const apiUrl = window.location.hostname === 'localhost' 
+      ? '/api/collect' 
+      : 'https://monitoring-beige.vercel.app/api/collect';
+    
+    fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
       .then(async res => {
         if (!res.ok) {
           let detail = '';
           try {
             const data = await res.json();
-            detail = data.error || JSON.stringify(data);
+            detail = data.error || data.detail || JSON.stringify(data);
           } catch {
             detail = await res.text();
           }
-          throw new Error(detail || 'Error al obtener datos');
+          throw new Error(detail || `Error HTTP ${res.status}`);
         }
         return res.json();
       })
       .then(data => {
+        console.log('Datos recibidos:', data);
         setVisits(Array.isArray(data) ? data : (data.visits || []));
         setLoading(false);
       })
       .catch(e => {
-        setError('Error al obtener datos');
-        setErrorDetail(e.message);
+        console.error('Error al obtener visitas:', e);
+        if (e.message.includes('Failed to fetch') || e.message.includes('NetworkError')) {
+          setError('Error de conexión');
+          setErrorDetail('No se pudo conectar con el servidor. Verifica tu conexión o que el servidor esté activo.');
+        } else if (e.message.includes('CORS')) {
+          setError('Error de permisos CORS');
+          setErrorDetail('El servidor no permite solicitudes desde este dominio. Contacta al administrador.');
+        } else {
+          setError('Error al obtener datos');
+          setErrorDetail(e.message);
+        }
         setLoading(false);
       });
   }, []);

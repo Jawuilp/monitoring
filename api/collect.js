@@ -2,9 +2,47 @@
 import pool from './db.js';
 
 export default async (req, res) => {
+  // Configurar CORS headers
+  const allowedOrigins = [
+    'https://jawuil.dev',
+    'https://monitoring-beige.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000'
+  ];
+  
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    // Permitir cualquier origen para desarrollo (puedes cambiar esto en producción)
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+  
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Max-Age', '86400');
+  
+  // Manejar preflight request
+  if (req.method === 'OPTIONS') {
+    return res.status(200).end();
+  }
+  
   try {
     if (req.method === 'POST') {
-      const { url, ip, duration } = req.body || {};
+      // Manejar sendBeacon que envía texto plano
+      let data = req.body;
+      
+      // Si el body es un string (sendBeacon), intentar parsearlo
+      if (typeof data === 'string') {
+        try {
+          data = JSON.parse(data);
+        } catch (e) {
+          console.error('Error parseando JSON:', e);
+          return res.status(400).json({ error: 'Formato de datos inválido', detail: e.message });
+        }
+      }
+      
+      const { url, ip, duration } = data || {};
       if (!url || !ip || typeof duration !== 'number') {
         return res.status(400).json({ error: 'Datos incompletos o inválidos. Se requiere url, ip y duration (number).' });
       }

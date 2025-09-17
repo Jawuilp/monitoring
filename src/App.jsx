@@ -8,17 +8,37 @@ export default function App() {
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    fetch('/api/collect?action=get')
-      .then(res => {
-        if (!res.ok) throw new Error('Error al obtener datos');
+    const apiUrl = window.location.hostname === 'localhost' 
+      ? '/api/collect' 
+      : 'https://monitoring-beige.vercel.app/api/collect';
+    
+    fetch(apiUrl, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    })
+      .then(async res => {
+        if (!res.ok) {
+          const errorData = await res.json().catch(() => ({}));
+          throw new Error(errorData.error || `Error HTTP ${res.status}`);
+        }
         return res.json();
       })
       .then(data => {
+        console.log('Visitas cargadas:', data?.length || 0);
         setVisits(Array.isArray(data) ? data : (data.visits || []));
         setLoading(false);
       })
       .catch(e => {
-        setError(e.message);
+        console.error('Error al cargar visitas:', e);
+        if (e.message.includes('Failed to fetch')) {
+          setError('No se pudo conectar con el servidor');
+        } else if (e.message.includes('CORS')) {
+          setError('Error de permisos CORS - Verifica la configuración del servidor');
+        } else {
+          setError(e.message);
+        }
         setLoading(false);
       });
   }, []);
@@ -74,8 +94,13 @@ export default function App() {
                 <div className="flex items-center justify-center text-center text-gray-500">
                   <div className="flex flex-col items-center">
                     <span className="material-icons text-5xl text-red-400 mb-2">error_outline</span>
-                    <p className="font-medium">Error al obtener datos</p>
-                    <p className="text-sm">No pudimos cargar las últimas visitas. Por favor, inténtalo de nuevo más tarde.</p>
+                    <p className="font-medium text-red-600">{error}</p>
+                    <p className="text-sm mt-2">No pudimos cargar las últimas visitas.</p>
+                    {error.includes('CORS') && (
+                      <div className="mt-2 text-xs bg-yellow-50 p-2 rounded">
+                        <p className="text-yellow-800">Tip: Asegúrate que tu dominio esté configurado en la API</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
