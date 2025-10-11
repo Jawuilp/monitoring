@@ -1,7 +1,7 @@
 class SimpleTracker {
   constructor() {
       this.startTime = new Date();
-      this.endpoint = 'https://monitoring-beige.vercel.app/api/hb';
+      this.endpoint = 'https://monitoring-beige.vercel.app/api/event';
       this.debug = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       this.trackVisit();
   }
@@ -108,5 +108,5 @@ if (typeof window !== 'undefined') {
     } else {
         window.__tracker = new SimpleTracker();
     }
-    console.log('Analytics tracker cargado desde:', window.location.origin);
+    console.log('Analytics observer cargado desde:', window.location.origin);
 }

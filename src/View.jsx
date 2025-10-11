@@ -9,9 +9,9 @@ export default function View() {
   const [checking, setChecking] = useState({});
 
   useEffect(() => {
-    const apiUrl = window.location.hostname === 'localhost' 
-      ? '/api/hb' 
-      : 'https://monitoring-beige.vercel.app/api/hb';
+    const apiUrl = window.location.hostname === 'localhost'
+      ? '/api/event'
+      : 'https://monitoring-beige.vercel.app/api/event';
     
     fetch(apiUrl, {
       method: 'GET',
