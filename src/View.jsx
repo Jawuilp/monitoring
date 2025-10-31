@@ -11,7 +11,7 @@ export default function View() {
   useEffect(() => {
     const apiUrl = window.location.hostname === 'localhost'
       ? '/api/event'
-      : 'https://monitoring-beige.vercel.app/api/event';
+      : 'https://toolting.vercel.app/api/event';
     
     fetch(apiUrl, {
       method: 'GET',

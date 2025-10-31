@@ -4,13 +4,13 @@ export default function App() {
   const [visits, setVisits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const script = '<script src="https://monitoring-beige.vercel.app/observer.js"></script>';
+  const script = '<script src="https://toolting.vercel.app/observer.js"></script>';
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
     const apiUrl = window.location.hostname === 'localhost' 
       ? '/api/data'
-      : 'https://monitoring-beige.vercel.app/api/data';
+      : 'https://toolting.vercel.app/api/data';
     
     fetch(apiUrl, {
       method: 'GET',
