@@ -114,16 +114,45 @@ export default function App() {
                 </div>
               )}
               {!loading && !error && visits.length > 0 && (
-                <ul className="w-full mt-2 space-y-2">
-                  {visits.slice(0, 10).map((v, i) => (
-                    <li key={i} className="bg-gray-50 border border-gray-200 rounded px-4 py-2 flex flex-col md:flex-row md:items-center md:justify-between text-sm">
-                      <span className="font-semibold text-gray-900 break-all">{v.url}</span>
-                      <span className="text-gray-500">{new Date(v.date).toLocaleString()}</span>
-                      <span className="text-gray-400">IP: {v.ip}</span>
-                      <span className="text-gray-400">Duración: {v.duration}s</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full bg-white">
+                    <thead>
+                      <tr className="bg-gray-100 border-b border-gray-200">
+                        <th className="py-3 px-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">URL</th>
+                        <th className="py-3 px-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Fecha y Hora</th>
+                        <th className="py-3 px-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">IP</th>
+                        <th className="py-3 px-4 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Duración</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {visits.slice(0, 10).map((v, i) => (
+                        <tr key={i} className="hover:bg-gray-50 transition-colors">
+                          <td className="py-3 px-4 text-sm text-gray-900 break-all max-w-xs">
+                            <a href={v.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 hover:underline">
+                              {v.url}
+                            </a>
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600 whitespace-nowrap">
+                            {new Date(v.date).toLocaleString('es-ES', {
+                              year: 'numeric',
+                              month: '2-digit',
+                              day: '2-digit',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit'
+                            })}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600 font-mono">
+                            {v.ip || 'N/A'}
+                          </td>
+                          <td className="py-3 px-4 text-sm text-gray-600">
+                            {v.duration ? `${v.duration}s` : 'N/A'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               )}
             </div>
           </div>
