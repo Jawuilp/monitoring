@@ -4,6 +4,8 @@
 
 body {
   @apply bg-bg-light text-text-light transition-colors duration-300;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  min-height: 100vh;
 }
 .dark body {
   @apply bg-bg-dark text-text-dark;
@@ -59,21 +61,48 @@ table {
   border-collapse: separate;
   border-spacing: 0;
   overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 table thead th {
   position: sticky;
   top: 0;
-  background: #f3f4f6;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   z-index: 10;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  border: none;
+}
+
+table tbody tr {
+  transition: all 0.2s ease;
 }
 
 table tbody tr:hover {
-  background-color: #f9fafb;
+  background-color: #eff6ff;
+  transform: scale(1.005);
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.15);
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+table tbody tr:nth-child(even):hover {
+  background-color: #eff6ff;
+}
+
+table td {
+  border: none;
 }
 
 table td a {
   word-break: break-word;
+  transition: all 0.2s ease;
+}
+
+table td a:hover {
+  color: #1e40af;
+  transform: translateX(2px);
 }
 
 @media (max-width: 768px) {
