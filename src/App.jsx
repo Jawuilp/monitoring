@@ -114,28 +114,16 @@ export default function App() {
                 </div>
               )}
               {!loading && !error && visits.length > 0 && (
-                <div className="overflow-x-auto mt-2">
-                  <table className="min-w-full bg-white rounded shadow border border-gray-200">
-                    <thead>
-                      <tr className="bg-gray-100 text-gray-900">
-                        <th className="py-3 px-4 text-left">URL</th>
-                        <th className="py-3 px-4 text-left">Fecha</th>
-                        <th className="py-3 px-4 text-left">IP</th>
-                        <th className="py-3 px-4 text-left">Duración</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {visits.slice(0, 10).map((v, i) => (
-                        <tr key={i} className="border-b last:border-b-0 border-gray-200">
-                          <td className="py-2 px-4 break-all font-semibold text-gray-900">{v.url}</td>
-                          <td className="py-2 px-4 text-gray-500">{new Date(v.date).toLocaleString()}</td>
-                          <td className="py-2 px-4 text-gray-400">{v.ip}</td>
-                          <td className="py-2 px-4 text-gray-400">{v.duration}s</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                <ul className="w-full mt-2 space-y-2">
+                  {visits.slice(0, 10).map((v, i) => (
+                    <li key={i} className="bg-gray-50 border border-gray-200 rounded px-4 py-2 flex flex-col md:flex-row md:items-center md:justify-between text-sm">
+                      <span className="font-semibold text-gray-900 break-all">{v.url}</span>
+                      <span className="text-gray-500">{new Date(v.date).toLocaleString()}</span>
+                      <span className="text-gray-400">IP: {v.ip}</span>
+                      <span className="text-gray-400">Duración: {v.duration}s</span>
+                    </li>
+                  ))}
+                </ul>
               )}
             </div>
           </div>
