@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 
 export default function App() {
   const [visits, setVisits] = useState([]);
@@ -7,6 +7,7 @@ export default function App() {
   const script = '<script src="https://toolting.vercel.app/observer.js"></script>';
   const [copied, setCopied] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const [timeRange, setTimeRange] = useState('7days');
 
   useEffect(() => {
     const apiUrl = window.location.hostname === 'localhost' 
@@ -52,6 +53,56 @@ export default function App() {
 
   const displayedVisits = showAll ? visits : visits.slice(0, 10);
 
+  // Calcular métricas
+  const metrics = useMemo(() => {
+    if (!visits.length) return null;
+    
+    const totalVisits = visits.length;
+    const uniqueUrls = new Set(visits.map(v => v.url)).size;
+    const uniqueIps = new Set(visits.map(v => v.ip_address).filter(Boolean)).size;
+    const avgDuration = Math.round(
+      visits.filter(v => v.duration_seconds).reduce((acc, v) => acc + v.duration_seconds, 0) / 
+      visits.filter(v => v.duration_seconds).length || 0
+    );
+
+    // Páginas más populares
+    const urlCounts = visits.reduce((acc, v) => {
+      acc[v.url] = (acc[v.url] || 0) + 1;
+      return acc;
+    }, {});
+    const topPages = Object.entries(urlCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 7)
+      .map(([url, count]) => ({
+        url: url.replace('https://', '').replace('http://', '').split('/')[0] + (url.split('/').length > 3 ? '/' + url.split('/').slice(3).join('/') : ''),
+        count,
+        percentage: (count / totalVisits * 100).toFixed(1)
+      }));
+
+    // Datos para gráfico de sesiones (últimos 7 días)
+    const last7Days = [];
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+      const count = visits.filter(v => {
+        const visitDate = new Date(v.date);
+        return visitDate.toDateString() === date.toDateString();
+      }).length;
+      last7Days.push({ date: dateStr, count });
+    }
+
+    return {
+      totalVisits,
+      uniqueUrls,
+      uniqueIps,
+      avgDuration,
+      topPages,
+      chartData: last7Days
+    };
+  }, [visits]);
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
       <header className="bg-slate-800/50 border-b border-slate-700/50 sticky top-0 z-50 backdrop-blur-xl">
@@ -66,28 +117,21 @@ export default function App() {
                 <p className="text-xs text-slate-400">Monitoreo en tiempo real</p>
               </div>
             </div>
-            <nav className="flex items-center space-x-2">
-              <a className="bg-gradient-to-r from-cyan-500 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-cyan-600 hover:to-blue-700 transition-all flex items-center space-x-2 font-medium shadow-lg shadow-cyan-500/30" href="/">
-                <span className="material-icons text-lg">dashboard</span>
-                <span>Dashboard</span>
-              </a>
-              <a className="bg-slate-700/50 border border-slate-600 text-slate-300 px-4 py-2 rounded-lg hover:bg-slate-600/50 hover:text-white transition-all flex items-center space-x-2 font-medium" href="/view">
-                <span className="material-icons text-lg">bar_chart</span>
-                <span>Análisis</span>
-              </a>
-            </nav>
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2 bg-slate-700/30 px-4 py-2 rounded-lg border border-slate-600/50">
+                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                <span className="text-slate-300 text-sm font-medium">Live</span>
+              </div>
+              <span className="text-slate-400 text-sm">{new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+            </div>
           </div>
         </div>
       </header>
       <main className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-6">
-            <h2 className="text-3xl font-bold text-white mb-1">Dashboard Principal</h2>
-            <p className="text-gray-400">Vista general de tus métricas y visitas</p>
-          </div>
           
           {/* Tarjetas de estadísticas */}
-          {!loading && !error && visits.length > 0 && (
+          {!loading && !error && metrics && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-xl border border-slate-700/50 p-6 hover:shadow-2xl hover:scale-105 transition-all duration-300">
                 <div className="flex flex-col">
@@ -153,6 +197,65 @@ export default function App() {
               </div>
             </div>
           )}
+
+          {/* Grid de 2 columnas: Gráfico de sesiones y Páginas populares */}
+          {!loading && !error && metrics && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+              {/* Gráfico de Sesiones */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-xl border border-slate-700/50 p-6">
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-white mb-1">Sessions</h3>
+                  <p className="text-slate-400 text-sm">Visitas en los últimos 7 días</p>
+                </div>
+                <div className="h-64 flex items-end justify-between space-x-2">
+                  {metrics.chartData.map((day, idx) => {
+                    const maxCount = Math.max(...metrics.chartData.map(d => d.count));
+                    const height = maxCount > 0 ? (day.count / maxCount) * 100 : 0;
+                    return (
+                      <div key={idx} className="flex-1 flex flex-col items-center">
+                        <div className="w-full bg-slate-700/30 rounded-t-lg relative group cursor-pointer hover:bg-cyan-500/30 transition-all" 
+                             style={{ height: `${Math.max(height, 5)}%` }}>
+                          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900 px-2 py-1 rounded text-xs text-white opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                            {day.count} visitas
+                          </div>
+                          <div className="absolute inset-0 bg-gradient-to-t from-cyan-500 to-blue-500 rounded-t-lg" 
+                               style={{ height: '100%' }}></div>
+                        </div>
+                        <span className="text-xs text-slate-400 mt-2">{day.date}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Páginas Populares */}
+              <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-xl border border-slate-700/50 p-6">
+                <div className="mb-6">
+                  <h3 className="text-lg font-bold text-white mb-1">Most popular pages (7 days)</h3>
+                  <p className="text-slate-400 text-sm">Top páginas más visitadas</p>
+                </div>
+                <div className="space-y-4">
+                  {metrics.topPages.map((page, idx) => (
+                    <div key={idx} className="group">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center space-x-2 flex-1 min-w-0">
+                          <span className="text-slate-400 text-sm font-mono">{idx + 1}</span>
+                          <span className="text-cyan-400 text-sm truncate">{page.url}</span>
+                        </div>
+                        <span className="text-white font-bold text-sm ml-2">{page.count}</span>
+                      </div>
+                      <div className="w-full bg-slate-700/30 rounded-full h-2 overflow-hidden">
+                        <div 
+                          className="h-full bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full transition-all duration-500 group-hover:from-cyan-400 group-hover:to-blue-400"
+                          style={{ width: `${page.percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
           
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-xl border border-slate-700/50 p-6 mb-6">
             <div className="flex items-center space-x-2 mb-4">
@@ -174,13 +277,12 @@ export default function App() {
           <div className="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl shadow-xl border border-slate-700/50 overflow-hidden">
             <div className="p-6 border-b border-slate-700/50">
               <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <span className="material-icons text-cyan-400">visibility</span>
-                  <h3 className="text-lg font-bold text-white">Últimas Visitas</h3>
+                <div>
+                  <h3 className="text-lg font-bold text-white mb-1">Últimas Visitas</h3>
+                  <p className="text-slate-400 text-sm">Registro detallado de todas las visitas</p>
                 </div>
-                <span className="bg-cyan-500/20 text-cyan-400 px-3 py-1 rounded-full text-xs font-semibold border border-cyan-500/30">{visits.length} total</span>
+                <span className="bg-cyan-500/20 text-cyan-400 px-4 py-2 rounded-lg text-sm font-bold border border-cyan-500/30">{visits.length} total</span>
               </div>
-              <p className="text-slate-400 text-sm mt-1">Registro detallado de todas las visitas</p>
             </div>
             <div className="p-6">
               {loading && (
