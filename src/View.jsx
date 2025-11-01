@@ -70,23 +70,45 @@ export default function View() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 font-['Inter']">
-      <header className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-gray-900">Analytics</h1>
-          <nav>
-            <a className="text-base font-medium text-gray-500 hover:text-gray-900" href="/">Analytics</a>
-          </nav>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 backdrop-blur-md bg-opacity-90">
+        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center">
+            <div className="flex items-center space-x-3">
+              <div className="bg-gradient-to-br from-blue-500 to-indigo-600 p-2 rounded-lg">
+                <span className="material-icons text-white text-2xl">analytics</span>
+              </div>
+              <div>
+                <h1 className="text-xl font-bold text-gray-900">Analytics Dashboard</h1>
+                <p className="text-xs text-gray-500">Monitoreo en tiempo real</p>
+              </div>
+            </div>
+            <nav className="flex items-center space-x-2">
+              <a className="bg-white border-2 border-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:border-blue-500 hover:text-blue-600 transition-all flex items-center space-x-2 font-medium" href="/">
+                <span className="material-icons text-lg">dashboard</span>
+                <span>Dashboard</span>
+              </a>
+              <a className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-all flex items-center space-x-2 font-medium shadow-sm" href="/view">
+                <span className="material-icons text-lg">bar_chart</span>
+                <span>Análisis</span>
+              </a>
+            </nav>
+          </div>
         </div>
       </header>
-      <main className="py-10">
+      <main className="py-8">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold leading-tight text-gray-900">Visualización de Datos</h2>
+          <div className="mb-6">
+            <h2 className="text-3xl font-bold text-gray-900 mb-1">Análisis de URLs</h2>
+            <p className="text-gray-600">Estadísticas agrupadas por sitio web</p>
           </div>
-          <div className="bg-white rounded-lg shadow">
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Visitas por URL</h3>
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center space-x-2">
+                <span className="material-icons text-blue-600">insert_chart</span>
+                <h3 className="text-lg font-bold text-gray-900">Visitas por URL</h3>
+              </div>
+              <p className="text-gray-500 text-sm mt-1">Cantidad de visitas agrupadas por sitio web</p>
             </div>
             <div className="p-6">
               {loading && (
@@ -119,39 +141,64 @@ export default function View() {
                 </div>
               )}
               {!loading && !error && visits.length > 0 && (
-                <div className="overflow-x-auto mt-2">
-                  <table className="min-w-full bg-white rounded shadow border border-gray-200">
-                    <thead>
-                      <tr className="bg-gray-100 text-gray-900">
-                        <th className="py-3 px-4 text-left">URL</th>
-                        <th className="py-3 px-4">Visitas</th>
-                        <th className="py-3 px-4">Estado</th>
-                        <th className="py-3 px-4">Acción</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Object.entries(visitasPorUrl).map(([url, count]) => (
-                        <tr key={url} className="border-b last:border-b-0 border-gray-200">
-                          <td className="py-2 px-4 break-all">{url}</td>
-                          <td className="py-2 px-4 text-center">{count}</td>
-                          <td className="py-2 px-4 text-center">
-                            {status[url] === 'activo' && <span className="text-green-600 font-bold">Activo</span>}
-                            {status[url] === 'inactivo' && <span className="text-red-600 font-bold">Inactivo</span>}
-                            {!status[url] && <span className="text-gray-500">Sin verificar</span>}
-                          </td>
-                          <td className="py-2 px-4 text-center">
-                            <button
-                              onClick={() => verificarSitio(url)}
-                              disabled={checking[url]}
-                              className={`bg-gray-200 text-gray-700 font-bold py-1 px-4 rounded shadow border border-gray-300 transition-opacity ${checking[url] ? 'opacity-60 cursor-not-allowed' : 'hover:opacity-90'}`}
-                            >
-                              {checking[url] ? 'Verificando...' : 'Verificar estado'}
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                <div className="space-y-3">
+                  {Object.entries(visitasPorUrl)
+                    .sort((a, b) => b[1] - a[1])
+                    .map(([url, count]) => {
+                      const percentage = (count / visits.length) * 100;
+                      return (
+                        <div key={url} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-all border border-gray-200">
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center space-x-3 flex-1 min-w-0">
+                              <span className="material-icons text-blue-600">language</span>
+                              <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 font-medium truncate">
+                                {url}
+                              </a>
+                            </div>
+                            <div className="flex items-center space-x-4 ml-4">
+                              <div className="text-right">
+                                <div className="flex items-center space-x-2">
+                                  <span className="text-2xl font-bold text-gray-900">{count}</span>
+                                  <span className="text-xs text-gray-500">visitas</span>
+                                </div>
+                                <p className="text-xs text-gray-500">{percentage.toFixed(1)}% del total</p>
+                              </div>
+                              <button
+                                onClick={() => verificarSitio(url)}
+                                disabled={checking[url]}
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-all font-medium disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-1"
+                              >
+                                <span className="material-icons text-sm">{checking[url] ? 'hourglass_empty' : 'check_circle'}</span>
+                                <span>{checking[url] ? 'Verificando...' : 'Verificar'}</span>
+                              </button>
+                            </div>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-2">
+                            <div className="bg-gradient-to-r from-blue-500 to-indigo-600 h-2.5 rounded-full transition-all" style={{ width: `${percentage}%` }}></div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {status[url] === 'activo' && (
+                              <span className="inline-flex items-center space-x-1 bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-semibold">
+                                <span className="material-icons" style={{ fontSize: '14px' }}>check_circle</span>
+                                <span>Activo</span>
+                              </span>
+                            )}
+                            {status[url] === 'inactivo' && (
+                              <span className="inline-flex items-center space-x-1 bg-red-100 text-red-700 px-3 py-1 rounded-full text-xs font-semibold">
+                                <span className="material-icons" style={{ fontSize: '14px' }}>cancel</span>
+                                <span>Inactivo</span>
+                              </span>
+                            )}
+                            {!status[url] && (
+                              <span className="inline-flex items-center space-x-1 bg-gray-200 text-gray-600 px-3 py-1 rounded-full text-xs font-semibold">
+                                <span className="material-icons" style={{ fontSize: '14px' }}>help</span>
+                                <span>Sin verificar</span>
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
                 </div>
               )}
             </div>
