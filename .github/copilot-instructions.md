@@ -15,7 +15,7 @@ Este proyecto es un sistema de monitoreo de visitas web con dashboard y API REST
 - **Instalación local**: `npm install` y `npm run dev`. Requiere archivo `.env.local` con `DATABASE_URL`.
 - **Despliegue**: Push a `main` activa deploy automático en Vercel.
 - **Agregar dominio**: Editar `allowedOrigins` en `api/collect.js` y desplegar.
-- **Integración tracker**: Incluir `<script src="https://monitoring-beige.vercel.app/tracker.js"></script>` en el sitio web.
+- **Integración tracker**: Incluir `<script src="https://toolting.vercel.app/tracker.js"></script>` en el sitio web.
 - **Debugging**: Logs mejorados en frontend y backend. Modo debug automático en localhost.
 
 ## Convenciones y patrones

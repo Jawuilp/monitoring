@@ -5,7 +5,7 @@ export default async (req, res) => {
   // Configurar CORS headers
   const allowedOrigins = [
     'https://jawuil.dev',
-    'https://monitoring-beige.vercel.app',
+    'https://toolting.vercel.app',
     'http://localhost:5173',
     'http://localhost:3000'
   ];

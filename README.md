@@ -56,7 +56,7 @@ CREATE TABLE visits (
 ### Configuración CORS
 La API ya está configurada para permitir solicitudes desde:
 - https://jawuil.dev
-- https://monitoring-beige.vercel.app
+- https://toolting.vercel.app
 - http://localhost:5173
 - http://localhost:3000
 
@@ -75,7 +75,7 @@ const allowedOrigins = [
 Agrega este script en el `<head>` o antes del cierre de `</body>` en tu sitio web:
 
 ```html
-<script src="https://monitoring-beige.vercel.app/tracker.js"></script>
+<script src="https://toolting.vercel.app/tracker.js"></script>
 ```
 
 ### API Endpoints

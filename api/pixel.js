@@ -11,7 +11,7 @@ export default async (req, res) => {
   // CORS básico (aunque es una imagen, habilitamos por si se solicita cross-site)
   const allowedOrigins = [
     'https://jawuil.dev',
-    'https://monitoring-beige.vercel.app',
+    'https://toolting.vercel.app',
     'http://localhost:5173',
     'http://localhost:3000'
   ];

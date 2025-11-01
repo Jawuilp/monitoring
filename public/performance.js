@@ -1,8 +1,8 @@
 class SimpleTracker {
   constructor() {
       this.startTime = new Date();
-      this.endpoint = 'https://monitoring-beige.vercel.app/api/event';
-      this.pixelEndpoint = 'https://monitoring-beige.vercel.app/api/pixel';
+      this.endpoint = 'https://toolting.vercel.app/api/event';
+      this.pixelEndpoint = 'https://toolting.vercel.app/api/pixel';
       this.debug = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
       this.trackVisit();
   }
